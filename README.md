@@ -23,12 +23,12 @@ Extra configure file used in this script: [db_properties.ini]
 
 The format of [db_properties.ini]:
 
-> [postgresql]
-> url = \<postgresql url>
-> Database = \<Database name>
-> username = \<user name>  
-> password = \<password> 
-> driver = org.postgresql.Driver
+> [postgresql]     
+> url = \<postgresql url>          
+> Database = \<Database name>  
+> username = \<user name>       
+> password = \<password>    
+> driver = org.postgresql.Driver 
 
 
 ## Web.py
