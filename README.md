@@ -24,10 +24,11 @@ Extra configure file used in this script: [db_properties.ini] & [s3_properties.i
 The format of [db_properties.ini]:
 
 > [postgresql]     
-> url = \<postgresql url>          
+> url = \<jdbc:postgresql://public_dns/table_name>          
 > Database = \<Database name>  
 > username = \<user name>       
 > password = \<password>    
+> host = \<public_dns:port_number>    
 > driver = org.postgresql.Driver 
 
 The format of [s3_properties.ini]:
