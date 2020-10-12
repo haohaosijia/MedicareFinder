@@ -22,16 +22,12 @@ The detailed use of code includes:
 Extra configure file used in this script: [db_properties.ini]
 
 The format of [db_properties.ini]:
-> [postgresql]
 
+> [postgresql]
 > url = \<postgresql url>
-  
 > Database = \<Database name>
-  
-> username = \<user name>
-  
-> password = \<password>
-  
+> username = \<user name>  
+> password = \<password> 
 > driver = org.postgresql.Driver
 
 
