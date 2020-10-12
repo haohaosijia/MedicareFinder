@@ -1,0 +1,10 @@
+key file name
+# replace key name in main.py
+key_bs = 'DE1_0_200*_Beneficiary_Summary_File_Sample_1.csv'
+key_ip = 'DE1_0_2008_to_2010_Inpatient_Claims_Sample_1.csv'
+key_op = 'DE1_0_2008_to_2010_Outpatient_Claims_Sample_1.csv'
+key_ca = 'DE1_0_2008_to_2010_Carrier_Claims_Sample_1A.csv'
+key_phy = 'Physician_Compare_National_Downloadable_File.csv'
+key_pos = 'Provider_of_Services_File_-_OTHER_-_June_2020.csv'
+key_IDC10 = 'I10cm_desc2010.txt'
+key_I9toI10 = '2010_I9gem.txt'

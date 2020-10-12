@@ -12,6 +12,7 @@ from pyspark.sql.window import *
 import pyspark.sql.functions as f
 from pyspark.sql.types import DoubleType
 from pyspark.sql.types import IntegerType
+import configparser
 
 # Function to read csv from s3 to spark
 def read_s3_csv(key):
@@ -42,10 +43,12 @@ def ICD_to_Text(key1, key2):
             )
     return df3
 
+# key and bucket name
 
-# buckey and key name
-    
-bucket = 'medicareclaim'
+config = configparser.ConfigParser()
+config.read("s3_properties.ini")
+s3_prop = config['s3']
+bucket = s3_prop['bucket']    
 key_bs = 'DE1_0_200*_Beneficiary_Summary_File_Sample_*.csv'
 key_ip = 'DE1_0_2008_to_2010_Inpatient_Claims_Sample_*.csv'
 key_op = 'DE1_0_2008_to_2010_Outpatient_Claims_Sample_*.csv'
@@ -69,7 +72,8 @@ df_phy = read_s3_csv(key_phy) \
         'NPI'
         , 'First Name'
         , 'Last Name'
-        , 'Credential'
+        , 'Primary specialty'
+        , 'Organization legal name'
         , 'Hospital affiliation CCN 1'
         )
 
@@ -101,7 +105,8 @@ df_phy_pos = df_phy \
         , 'NPI'
         , 'First Name'
         , 'Last Name'
-        , 'Credential'
+        , 'Primary specialty'
+        , 'Organization legal name'
         , df_pos.SSA_CNTY_CD
         , df_pos.FAC_NAME
         , df_pos.SSA_STATE_CD
@@ -109,9 +114,14 @@ df_phy_pos = df_phy \
         , df_pos.ST_ADR
         , df_pos.ZIP_CD
         , df_pos.CRTFD_BED_CNT
-        )
+        ) \
+    # .withColumnRenamed('First Name', 'First_Name')\
+    # .withColumnRenamed('Last Name', 'Last_Name')\
+    # .withColumnRenamed('Primary specialty', 'Primary_specialty')\
+    # .withColumnRenamed('Organization legal name', 'Organization_legal_name')\
 
-df_phy_pos.show()
+
+# df_phy_pos.show()
 
 # claim datasets input
 
@@ -128,10 +138,13 @@ df_bs = read_s3_csv(key_bs) \
 
 df_ip_claims = read_s3_csv(key_ip)
 # combine several diagonosis code columns name together into one list
-DGNS_CD_ip_Col = df_ip_claims \
-    .select('ADMTNG_ICD9_DGNS_CD'
-            , df_ip_claims.colRegex("`(ICD9_DGNS_CD_)\d+`")).columns
+# DGNS_CD_ip_Col = df_ip_claims \
+#     .select('ADMTNG_ICD9_DGNS_CD'
+#             , df_ip_claims.colRegex("`(ICD9_DGNS_CD_)\d+`")).columns
+
+
 # change type
+
 df_ip_claims = df_ip_claims \
     .withColumn('CLM_PMT_AMT'
                 , df_ip_claims['CLM_PMT_AMT'].cast(DoubleType())) \
@@ -139,16 +152,17 @@ df_ip_claims = df_ip_claims \
                 , df_ip_claims['NCH_BENE_IP_DDCTBL_AMT'].cast(DoubleType())) \
     .withColumn('CLM_UTLZTN_DAY_CNT'
                 , df_ip_claims['CLM_UTLZTN_DAY_CNT'].cast(IntegerType())) \
-    .withColumn("ICD9_DGNS_CD", f.array(DGNS_CD_ip_Col)) \
     .select(
         'DESYNPUF_ID'
         , 'CLM_ID'
         , 'CLM_PMT_AMT'
         , 'NCH_BENE_DDCTBL_AMT'
         , 'CLM_UTLZTN_DAY_CNT'
-#       , 'ADMTNG_ICD9_DGNS_CD'
-        , 'ICD9_DGNS_CD'
-        )
+        , 'ADMTNG_ICD9_DGNS_CD'
+#        , 'ICD9_DGNS_CD'
+        ) \
+    .where(col("ADMTNG_ICD9_DGNS_CD").isNotNull())
+#    .withColumn("ICD9_DGNS_CD", f.array(DGNS_CD_ip_Col)) \
 # df_ip_claims.show()
 # df_ip_claims.printSchema()
 
@@ -157,25 +171,26 @@ df_ip_claims = df_ip_claims \
 
 df_op_claims = read_s3_csv(key_op)
 # combine several diagonosis code columns name together into one list
-DGNS_CD_op_Col = df_op_claims \
-    .select('ADMTNG_ICD9_DGNS_CD'
-            , df_op_claims.colRegex("`(ICD9_DGNS_CD_)\d+`")).columns
+# DGNS_CD_op_Col = df_op_claims \
+#     .select('ADMTNG_ICD9_DGNS_CD'
+#             , df_op_claims.colRegex("`(ICD9_DGNS_CD_)\d+`")).columns
 df_op_claims = df_op_claims \
     .withColumn('CLM_UTLZTN_DAY_CNT', lit(0)) \
     .withColumn('CLM_PMT_AMT'
                 , df_op_claims['CLM_PMT_AMT'].cast(DoubleType())) \
     .withColumn('NCH_BENE_DDCTBL_AMT'
                 , df_op_claims['NCH_BENE_PTB_DDCTBL_AMT'].cast(DoubleType())) \
-    .withColumn("ICD9_DGNS_CD", f.array(DGNS_CD_op_Col)) \
     .select(
         'DESYNPUF_ID'
         , 'CLM_ID'
         , 'CLM_PMT_AMT'
         , 'NCH_BENE_DDCTBL_AMT'
         , 'CLM_UTLZTN_DAY_CNT'
-#       , 'ADMTNG_ICD9_DGNS_CD'
-        , 'ICD9_DGNS_CD'
-        )
+        , 'ADMTNG_ICD9_DGNS_CD'
+#        , 'ICD9_DGNS_CD'
+        ) \
+    .where(col("ADMTNG_ICD9_DGNS_CD").isNotNull())
+#    .withColumn("ICD9_DGNS_CD", f.array(DGNS_CD_op_Col)) \
 # df_op_claims.show()
 # df_op_claims.printSchema()
 
@@ -184,40 +199,31 @@ df_op_claims = df_op_claims \
 df_carrier_claims = read_s3_csv(key_ca)
 
 # combine several similar columns name together into one list
+
 LINE_BENE_PTB_DDCTBL_AMT_Col = df_carrier_claims \
     .select(df_carrier_claims.colRegex("`(LINE_BENE_PTB_DDCTBL_AMT_)\d+`")).columns
 LINE_NCH_PMT_AMT_Col = df_carrier_claims \
     .select(df_carrier_claims.colRegex("`(LINE_NCH_PMT_AMT_)\d+`")).columns
-DGNS_CD_ca_Col = df_carrier_claims \
-    .select(df_carrier_claims.colRegex("`(ICD9_DGNS_CD_)\d+`")).columns
+# DGNS_CD_ca_Col = df_carrier_claims \
+#     .select(df_carrier_claims.colRegex("`(ICD9_DGNS_CD_)\d+`")).columns
 
 # change columns type
+
 for c in LINE_BENE_PTB_DDCTBL_AMT_Col:
     df_carrier_claims = df_carrier_claims \
         .withColumn(c, df_carrier_claims[c].cast(DoubleType()))
 for c in LINE_NCH_PMT_AMT_Col:
     df_carrier_claims = df_carrier_claims \
         .withColumn(c, df_carrier_claims[c].cast(DoubleType()))
-df_carrier_claims.printSchema()
-
-
-# df_ca_line_bene = df_ca_line_bene. \
-#     withColumn('TOTAL_LINE_BENE_PTB_DDCTBL_AMT'
-#                 , expr('+'.join(LINE_BENE_PTB_DDCTBL_AMT_Col)))
-       
-# df_ca_line_nch = df_carrier_claims. \
-#     select(*(col(c).cast("float").alias(c) for c in LINE_NCH_PMT_AMT_Col))
-# df_ca_line_nch = df_ca_line_nch. \
-#     withColumn('TOTAL_LINE_NCH_PMT_AMT'
-#                 , expr('+'.join(LINE_NCH_PMT_AMT_Col)))
+# df_carrier_claims.show()
 
 # add new columns to caculate total payment
+
 df_ca_claims = df_carrier_claims \
     .withColumn('NCH_BENE_DDCTBL_AMT'
                 , expr('+'.join(LINE_BENE_PTB_DDCTBL_AMT_Col))) \
     .withColumn('CLM_PMT_AMT'
                 , expr('+'.join(LINE_NCH_PMT_AMT_Col))) \
-    .withColumn("ICD9_DGNS_CD", f.array(DGNS_CD_ca_Col)) \
     .withColumn('CLM_UTLZTN_DAY_CNT', lit(-1)) \
     .select(
         'DESYNPUF_ID'
@@ -226,34 +232,40 @@ df_ca_claims = df_carrier_claims \
         , 'NCH_BENE_DDCTBL_AMT'
         , 'CLM_UTLZTN_DAY_CNT'
 #       , 'ADMTNG_ICD9_DGNS_CD'
-        , 'ICD9_DGNS_CD'
-        )            
-df_ca_claims.show()
-df_ca_claims.printSchema()
+        , 'ICD9_DGNS_CD_1'
+        ) \
+     .withColumnRenamed('ICD9_DGNS_CD1', 'ADMTNG_ICD9_DGNS_CD')\
+#    .where(col('ICD9_DGNS_CD1').isNotNull()) \
+#    .cache()            
+# df_ca_claims.show()
+# df_ca_claims.printSchema()
 
 # unioin three types of claims datasets together
 
-    
+   
 df_claims = df_ip_claims.union(df_op_claims) \
     .union(df_ca_claims) \
-    .dropDuplicates(['CLM_ID'])
+    .dropDuplicates(['CLM_ID']) \
+    .where(col("ADMTNG_ICD9_DGNS_CD").isNotNull()) \
+#    .cache()
+# df_claims.show()
 # df_claims.printSchema()
 
 # innerjoin claims datasets with Beneficiary datasets, add state information
 
 df_bc = df_claims.join(df_bs, df_claims.DESYNPUF_ID == df_bs.DESYNPUF_ID) \
-    .withColumn('ICD9_DGNS_CD', explode('ICD9_DGNS_CD')) \
     .select(
 #        df_bs.DESYNPUF_ID
-#         'CLM_ID'
-          df_bs.SP_STATE_CODE
+         'CLM_ID'
+        , df_bs.SP_STATE_CODE
         , df_bs.BENE_COUNTY_CD
         , 'CLM_PMT_AMT'
         , 'NCH_BENE_DDCTBL_AMT'
         , 'CLM_UTLZTN_DAY_CNT'
-        , 'ICD9_DGNS_CD'
-        )
-# df_bc.printSchema()
+        , 'ADMTNG_ICD9_DGNS_CD'
+        ) \
+#    .withColumn('ICD9_DGNS_CD', explode('ICD9_DGNS_CD'))
+# df_bc.show()
 
 # relpace diagnosis code with text information
 
@@ -261,21 +273,24 @@ df_IDC9 = ICD_to_Text(key_IDC10, key_I9toI10)
 
 # Add text information for ICD9 CODE
 df_Ibc = df_bc.join(df_IDC9
-                    , df_bc.ICD9_DGNS_CD == df_IDC9.I9CODE
+                    , df_bc.ADMTNG_ICD9_DGNS_CD == df_IDC9.I9CODE
                     , how = 'left') \
     .select(
-        'SP_STATE_CODE'
+        'CLM_ID'
+        , 'SP_STATE_CODE'
         , 'BENE_COUNTY_CD'
         , 'CLM_PMT_AMT'
         , 'NCH_BENE_DDCTBL_AMT'
         , 'CLM_UTLZTN_DAY_CNT'
 #        , 'ICD9_DGNS_CD'
         , 'I10TEXT'
-        ).cache()
-# df_Ibc.printSchema()
+        )
+df_Ibc.printSchema()
 # df_Ibc.show()
 
+
 # random assign physicians to claim datasets
+
 
 # Count number of physicians by state and county in order to random assign
 # physicians to claim records
@@ -288,13 +303,14 @@ df_phy_count = df_phy_pos \
         ) \
     .groupBy('SSA_STATE_CD', 'SSA_CNTY_CD') \
     .agg(countDistinct('NPI').alias('Count'))
-# df_phy_count.show()
+# df_phy_count.printSchema()
+
 
 # left join by row_num, one is using count to generate 
 # another use randmon function
 
 df_re_count = df_Ibc.join(
-    df_phy_count
+    broadcast(df_phy_count)
     ,((df_bc.SP_STATE_CODE == df_phy_count.SSA_STATE_CD) \
       & (df_bc.BENE_COUNTY_CD == df_phy_count.SSA_CNTY_CD))
     , how = "left") \
@@ -305,16 +321,17 @@ df_re_count = df_Ibc.join(
         , 'NCH_BENE_DDCTBL_AMT'
 #        , 'CLM_UTLZTN_DAY_CNT'
         , 'Count'
-#        , 'I10TEXT'
+#       , 'row_num'
+        , 'I10TEXT'
         ) \
     .withColumn('row_num'
                 , (f.rand()*col('Count') + 1).cast(IntegerType()))
-# df_re_count.show() 
+# df_re_count.show()
 
 # get the random selected physcian npi by left join
 
 df_re = df_re_count.join(
-     df_phy_pos
+     broadcast(df_phy_pos)
      , ((df_re_count.SSA_STATE_CD == df_phy_pos.SSA_STATE_CD) \
         & (df_re_count.SSA_CNTY_CD == df_phy_pos.SSA_CNTY_CD) \
             & (df_re_count.row_num ==df_phy_pos.row_num))
@@ -334,6 +351,8 @@ df_re = df_re_count.join(
     #     , df_phy_pos.ZIP_CD
     #     , df_phy_pos.CRTFD_BED_CNT)  
 # df_re.show() 
+# df_re.printSchema()
+
 
 # Group by physycians id
     
@@ -341,10 +360,15 @@ df_phy_groupby = df_re \
     .groupBy('NPI'
              , 'First Name'
              , 'Last Name'
+             , 'Primary specialty'
+             , 'Organization legal name'
              , 'FAC_NAME') \
         .count() \
-    .withColumnRenamed('count', 'Total Number of People Served')
-# df_phy_groupby.show()
+    .withColumnRenamed('count', 'Total Number of People Served')\
+    .withColumnRenamed('FAC_NAME', 'Hospital affiliation')
+df_phy_groupby.printSchema()
+# df_phy_groupby.show(20)
+
 
 # Group by providers id
     
@@ -354,11 +378,21 @@ df_pos_groupby = df_re \
              , 'FAC_NAME'
              , 'ST_ADR'
              , 'CRTFD_BED_CNT') \
-        .avg('CLM_PMT_AMT', 'NCH_BENE_DDCTBL_AMT')
-# df_pos_groupby.show()
-    
+        .avg('CLM_PMT_AMT', 'NCH_BENE_DDCTBL_AMT')\
+    .withColumnRenamed('PRVDR_NUM', 'Provider Number')\
+    .withColumnRenamed('ZIP_CD', 'Zip Code')\
+    .withColumnRenamed('FAC_NAME', 'Name')\
+    .withColumnRenamed('ST_ADR', 'Address')\
+    .withColumnRenamed('CRTFD_BED_CNT', 'Number of Certified Beds')\
+    .withColumnRenamed('avg(CLM_PMT_AMT)', 'Average Payment Amount')\
+    .withColumnRenamed('avg(NCH_BENE_DDCTBL_AMT)', 'Average Deductible Amount')
+df_pos_groupby.printSchema()
+# df_pos_groupby.count()   
+
+
 # read data into postgresql
 
+#df_phy_groupby.write.parquet("s3a://finaldata/phy.parquet",mode="overwrite")
 db_properties={}
 config = configparser.ConfigParser()
 config.read("db_properties.ini")
