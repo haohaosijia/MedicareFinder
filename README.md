@@ -19,7 +19,7 @@ The detailed use of code includes:
 - Combine three different datasets together;
 - Write data into postgresql.
 
-Extra configure file used in this script: [db_properties.ini]
+Extra configure file used in this script: [db_properties.ini] & [s3_properties.ini]
 
 The format of [db_properties.ini]:
 
@@ -30,6 +30,10 @@ The format of [db_properties.ini]:
 > password = \<password>    
 > driver = org.postgresql.Driver 
 
+The format of [s3_properties.ini]:
+
+> [s3]     
+> bucket = \<bucket name>          
 
 ## Web.py
 This file contains code of my web demo. I use the open-source app [streamlit].
