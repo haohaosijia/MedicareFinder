@@ -58,6 +58,7 @@ $ streamlit run web.py
 
 ### My_dag.py
 
+This file contains code of automated data processing using [Airflow]. Airflow includes two parts: one is upload file from local to s3, another is batching in spark.
 
 ## Test
 ### Input
