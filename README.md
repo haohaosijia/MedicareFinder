@@ -5,7 +5,7 @@ A medicare provider and physician comparison platform help you compare:
 - Profession and experience of physicians
 - National recommended medical protocols provided
 
-## Code
+## Installation and Configuration
 ### Main.py
 This file contains code of data processing with Spark. 
 
