@@ -47,6 +47,7 @@ The format of [s3_properties.ini]:
 
 ### Web.py
 This file contains code of my web demo. I use the open-source app [streamlit].
+Same configure file used in this script: [db_properties.ini].
 
 Installation configuration:
 - Install python library sqlalchemy;
