@@ -34,11 +34,11 @@ The format of **db_properties.ini**:
 
 ```sh
 [postgresql]     
-url = \<jdbc:postgresql://public_dns/table_name>          
-Database = \<Database name>  
-username = \<user name>       
-password = \<password>    
-host = \<public_dns:port_number>    
+url = <jdbc:postgresql://public_dns/table_name>          
+Database = <Database name>  
+username = <user name>       
+password = <password>    
+host = <public_dns:port_number>    
 driver = org.postgresql.Driver 
 ```
 The format of **s3_properties.ini**:
