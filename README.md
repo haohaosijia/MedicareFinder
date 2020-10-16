@@ -45,7 +45,7 @@ The format of **s3_properties.ini**:
 
 ```sh
 [s3]     
-bucket = \<bucket name> 
+bucket = <bucket name> 
 ```
 
 ### Web.py
