@@ -28,26 +28,29 @@ The detailed use of code includes:
 - Combine three different datasets together;
 - Write data into postgresql.
 
-Extra configure file used in this script: [db_properties.ini] & [s3_properties.ini]
+Extra configure file used in this script: **db_properties.ini** & **s3_properties.ini**
 
-The format of [db_properties.ini]:
+The format of **db_properties.ini**:
 
-> [postgresql]     
-> url = \<jdbc:postgresql://public_dns/table_name>          
-> Database = \<Database name>  
-> username = \<user name>       
-> password = \<password>    
-> host = \<public_dns:port_number>    
-> driver = org.postgresql.Driver 
+```sh
+[postgresql]     
+url = \<jdbc:postgresql://public_dns/table_name>          
+Database = \<Database name>  
+username = \<user name>       
+password = \<password>    
+host = \<public_dns:port_number>    
+driver = org.postgresql.Driver 
+```
+The format of **s3_properties.ini**:
 
-The format of [s3_properties.ini]:
-
-> [s3]     
-> bucket = \<bucket name>          
+```sh
+[s3]     
+bucket = \<bucket name> 
+```
 
 ### Web.py
-This file contains code of my web demo. I use the open-source app [streamlit].
-Same configure file used in this script: [db_properties.ini].
+This file contains code of my web demo. I use the open-source app **streamlit**.
+Same configure file used in this script: **db_properties.ini**.
 
 Installation configuration:
 - Install python library sqlalchemy;
@@ -62,7 +65,7 @@ $ streamlit run web.py
 
 ### My_dag.py
 
-This file contains code of automated data processing using [Airflow]. Airflow includes two parts: one is upload file from local to s3, another is batching in spark.
+This file contains code of automated data processing using **Airflow**. Airflow includes two parts: one is upload file from local to s3, another is batching in spark.
 
 ## Test
 ### Input
