@@ -8,6 +8,9 @@ A medicare provider and physician comparison platform help you compare:
 - [Claim Datasets](https://www.cms.gov/Research-Statistics-Data-and-Systems/Downloadable-Public-Use-Files/SynPUFs/DE_Syn_PUF)
 - [Provider Datasets](https://data.medicare.gov/Nursing-Home-Compare/Provider-Info/4pq5-n9py)
 - [Physician Datasets](https://data.medicare.gov/Physician-Compare/Physician-Compare-National-Downloadable-File/mj5m-pzi6)
+
+## Tech Stack
+![Image of Yaktocat](https://github.com/haohaosijia/Provider-Prospectus/blob/master/image.png)
 ## Installation and Configuration
 ### Main.py
 This file contains code of data processing with Spark. 
