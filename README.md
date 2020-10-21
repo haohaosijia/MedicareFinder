@@ -12,7 +12,7 @@ A medicare provider and physician comparison platform help you compare:
 - [Physician Datasets](https://data.medicare.gov/Physician-Compare/Physician-Compare-National-Downloadable-File/mj5m-pzi6)
 
 ## Tech Stack
-![Image of Yaktocat](https://github.com/haohaosijia/Provider-Prospectus/blob/master/image.png)
+![Image of Yaktocat](https://github.com/haohaosijia/Provider-Prospectus/blob/master/image/tech_stack.png)
 ## Installation and Configuration
 ### Main.py
 This file contains code of data processing with Spark. 
