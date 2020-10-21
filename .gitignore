@@ -1,0 +1,4 @@
+/data_processing/db_properties.ini
+/data_processing/s3_properties.ini
+/web/s3_properties.ini
+/web/db_properties.ini
